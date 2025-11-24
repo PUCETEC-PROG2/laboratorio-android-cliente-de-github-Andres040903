@@ -2,11 +2,9 @@ package ec.edu.uisek.githubclient
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import ec.edu.uisek.githubclient.databinding.ActivityMainBinding
 import ec.edu.uisek.githubclient.models.Repo
 import ec.edu.uisek.githubclient.services.RetrofitClient
@@ -15,6 +13,7 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class MainActivity : AppCompatActivity() {
+
     private lateinit var binding: ActivityMainBinding
     private lateinit var reposAdapter: ReposAdapter
 
@@ -22,19 +21,36 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         setupRecyclerView()
         fetchRepositories()
-        showProjectForm()
+
+        // AQUI ACTIVAMOS EL BOTÓN +
+        binding.fabAddRepo.setOnClickListener {
+            binding.fragmentContainer.visibility = View.VISIBLE
+            openProjectForm()
+        }
     }
-    private fun showProjectForm() {
+
+    // Abre el formulario cuando presiones el botón +
+    private fun openProjectForm() {
         val transaction = supportFragmentManager.beginTransaction()
         transaction.replace(R.id.fragmentContainer, ProjectFormFragment())
+        transaction.addToBackStack(null)
         transaction.commit()
     }
 
-
     private fun setupRecyclerView() {
-        reposAdapter = ReposAdapter()
+
+        reposAdapter = ReposAdapter(
+            onEdit = { repo ->
+                Toast.makeText(this, "Editar: ${repo.name}", Toast.LENGTH_SHORT).show()
+            },
+            onDelete = { repo ->
+                Toast.makeText(this, "Eliminar: ${repo.name}", Toast.LENGTH_SHORT).show()
+            }
+        )
+
         binding.repoRecyclerView.adapter = reposAdapter
     }
 
@@ -43,35 +59,38 @@ class MainActivity : AppCompatActivity() {
         val call = apiService.getRepos()
 
         call.enqueue(object : Callback<List<Repo>> {
-            override fun onResponse(call: Call<List<Repo>?>, response: Response<List<Repo>?>) {
+            override fun onResponse(call: Call<List<Repo>>, response: Response<List<Repo>>) {
+
                 if (response.isSuccessful) {
                     val repos = response.body()
-                    if (repos != null && repos.isNotEmpty()){
+
+                    if (repos != null && repos.isNotEmpty()) {
                         reposAdapter.updateRepositories(repos)
                     } else {
-                        // Vacia
-                        showMessage(msg = "usted no tiene repositorios")
+                        showMessage("Usted no tiene repositorios")
                     }
+
                 } else {
-                    val  errorMsg = when (response.code()) {
-                        401 -> "error de autenticacion"
+                    val errorMsg = when (response.code()) {
+                        401 -> "Error de autenticación"
                         403 -> "Recurso no permitido"
                         404 -> "Recurso no encontrado"
                         else -> "Error desconocido ${response.code()}"
                     }
+
                     Log.e("MainActivity", errorMsg)
                     showMessage(errorMsg)
                 }
             }
 
-            override fun onFailure(call: Call<List<Repo>?>, t: Throwable) {
-                showMessage("Error de conexion")
-                Log.e("MainActivity", "Error de conexion ${t.message}")
+            override fun onFailure(call: Call<List<Repo>>, t: Throwable) {
+                showMessage("Error de conexión")
+                Log.e("MainActivity", "Error de conexión: ${t.message}")
             }
         })
     }
 
-    private fun showMessage (msg : String) {
-        Toast.makeText(this, msg, Toast.LENGTH_LONG)
+    private fun showMessage(msg: String) {
+        Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
     }
 }
