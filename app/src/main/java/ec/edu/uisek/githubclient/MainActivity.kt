@@ -24,7 +24,14 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         setupRecyclerView()
         fetchRepositories()
+        showProjectForm()
     }
+    private fun showProjectForm() {
+        val transaction = supportFragmentManager.beginTransaction()
+        transaction.replace(R.id.fragmentContainer, ProjectFormFragment())
+        transaction.commit()
+    }
+
 
     private fun setupRecyclerView() {
         reposAdapter = ReposAdapter()
