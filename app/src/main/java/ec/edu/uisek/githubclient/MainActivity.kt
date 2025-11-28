@@ -108,7 +108,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun performDeleteRepo(repoName: String) {
         val apiService = RetrofitClient.gitHubApiService
-        val owner = "EstebanQuijia" // ¡Reemplaza con tu usuario!
+        val owner = "Andres040903" // ¡Reemplaza con tu usuario!
 
         val call = apiService.deleteRepo(owner, repoName)
 

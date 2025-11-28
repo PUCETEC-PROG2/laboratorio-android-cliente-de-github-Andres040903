@@ -93,7 +93,7 @@ class RepoForm : AppCompatActivity() {
             description = repoDescription
         )
 
-        val owner = "EstebanQuijia" // ¡Reemplaza con tu usuario!
+        val owner = "Andres040903" // ¡Reemplaza con tu usuario!
 
         val apiService = RetrofitClient.gitHubApiService
         val call = apiService.editRepo(owner, repoName, repoRequest) // Llama a @PATCH
